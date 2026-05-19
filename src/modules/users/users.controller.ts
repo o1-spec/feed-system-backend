@@ -43,15 +43,19 @@ export class UsersController {
 
   @Get('search')
   @ApiOperation({ summary: 'Search users' })
-  searchUsers(@Query('q') q: string, @Query('limit') limit?: number) {
-    return this.usersService.search(q, limit ?? 10);
+  searchUsers(
+    @CurrentUser('id') userId: string,
+    @Query('q') q: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.usersService.search(userId, q, limit ?? 10);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a user public profile by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  getUser(@Param('id') id: string) {
-    return this.usersService.findById(id);
+  getUser(@CurrentUser('id') activeUserId: string, @Param('id') id: string) {
+    return this.usersService.findById(id, activeUserId);
   }
 
   @Post(':id/follow')

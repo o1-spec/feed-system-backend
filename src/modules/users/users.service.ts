@@ -46,13 +46,22 @@ export class UsersService {
     this.celebrityThreshold = this.configService.get<number>('feed.celebrityThreshold') ?? 100;
   }
 
-  async findById(id: string) {
+  async findById(id: string, activeUserId?: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: PUBLIC_USER_SELECT,
     });
     if (!user) throw new NotFoundException('User not found');
-    return user;
+
+    let isFollowing = false;
+    if (activeUserId && activeUserId !== id) {
+      isFollowing = await this.isFollowing(activeUserId, id);
+    }
+
+    return {
+      ...user,
+      isFollowing,
+    };
   }
 
   async findByUsername(username: string) {
@@ -222,41 +231,60 @@ export class UsersService {
   async getSuggested(userId: string, query: PaginationQueryDto) {
     const limit = query.limit ?? 20;
 
-    
     const followed = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
     });
     const followedIds = followed.map((f) => f.followingId);
 
-    
     const users = await this.prisma.user.findMany({
       where: {
         id: {
-          notIn: [userId, ...followedIds],
+          not: userId,
         },
       },
       select: PUBLIC_USER_SELECT,
       take: limit,
     });
 
+    const items = users.map((user) => ({
+      ...user,
+      isFollowing: followedIds.includes(user.id),
+    }));
+
     return {
-      items: users,
+      items,
       nextCursor: null,
       hasNextPage: false,
     };
   }
 
-  async search(query: string, limit: number) {
-    return this.prisma.user.findMany({
+  async search(userId: string, query: string, limit: number) {
+    const followed = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+    const followedIds = followed.map((f) => f.followingId);
+
+    const users = await this.prisma.user.findMany({
       where: {
-        OR: [
-          { username: { contains: query, mode: 'insensitive' } },
-          { displayName: { contains: query, mode: 'insensitive' } },
+        AND: [
+          { id: { not: userId } },
+          {
+            OR: [
+              { username: { contains: query, mode: 'insensitive' } },
+              { displayName: { contains: query, mode: 'insensitive' } },
+            ],
+          },
         ],
       },
       select: PUBLIC_USER_SELECT,
       take: limit,
     });
+
+    return users.map((user) => ({
+      ...user,
+      isFollowing: followedIds.includes(user.id),
+    }));
   }
 }
