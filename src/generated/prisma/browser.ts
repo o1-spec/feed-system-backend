@@ -52,3 +52,13 @@ export type Notification = Prisma.NotificationModel
  * 
  */
 export type FeedItem = Prisma.FeedItemModel
+/**
+ * Model Bookmark
+ * 
+ */
+export type Bookmark = Prisma.BookmarkModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel

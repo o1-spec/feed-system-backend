@@ -35,6 +35,18 @@ export class UsersController {
     return this.usersService.updateProfile(userId, dto);
   }
 
+  @Get('suggested')
+  @ApiOperation({ summary: 'Get suggested users' })
+  getSuggested(@CurrentUser('id') userId: string, @Query() query: PaginationQueryDto) {
+    return this.usersService.getSuggested(userId, query);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search users' })
+  searchUsers(@Query('q') q: string, @Query('limit') limit?: number) {
+    return this.usersService.search(q, limit ?? 10);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user public profile by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })

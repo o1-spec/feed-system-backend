@@ -218,4 +218,45 @@ export class UsersService {
     });
     return follow !== null;
   }
+
+  async getSuggested(userId: string, query: PaginationQueryDto) {
+    const limit = query.limit ?? 20;
+
+    // Get list of followed user IDs to exclude
+    const followed = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+    const followedIds = followed.map((f) => f.followingId);
+
+    // Find other users that are not followed and not the user themselves
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: {
+          notIn: [userId, ...followedIds],
+        },
+      },
+      select: PUBLIC_USER_SELECT,
+      take: limit,
+    });
+
+    return {
+      items: users,
+      nextCursor: null,
+      hasNextPage: false,
+    };
+  }
+
+  async search(query: string, limit: number) {
+    return this.prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: 'insensitive' } },
+          { displayName: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      select: PUBLIC_USER_SELECT,
+      take: limit,
+    });
+  }
 }
