@@ -23,6 +23,10 @@ This system utilizes a multi-tiered architecture to elegantly solve the "Justin 
 - **Authentication**: Secure registration, login, and targeted session invalidation.
 - **Social Graph**: Highly optimized follow/unfollow capabilities with denormalized counters.
 - **Interactions**: Idempotent Likes and hierarchical Comments.
+- **Saved Index (Bookmarks)**: Saved chronological developer post indexes.
+- **Direct Messages**: Real-time chronological developer chat threads and conversation lists.
+
+📖 **API Reference:** Detailed request/response payloads, auth structures, and queries are documented inside [API_DOCUMENTATION.md](file:///Users/macbook/feed-system-backend/API_DOCUMENTATION.md).
 - **Scalable Feed**: Cursor-paginated (Opaque Base64 cursors) timeline retrieval that gracefully handles concurrent inserts.
 - **Celebrity Routing**: Automated promotion of highly-followed accounts to optimize resource allocation.
 
