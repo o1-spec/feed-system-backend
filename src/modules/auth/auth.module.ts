@@ -9,9 +9,9 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy.js';
 @Module({
   imports: [
     PassportModule,
-    // JwtModule is configured without global defaults here.
-    // Each token type (access vs refresh) uses its own secret/expiry
-    // set directly in AuthService.generateTokens() via signAsync options.
+    
+    
+    
     JwtModule.register({}),
   ],
   controllers: [AuthController],

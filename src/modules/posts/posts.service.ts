@@ -55,8 +55,6 @@ export class PostsService {
     @InjectQueue('fanout') private readonly fanoutQueue: Queue<FanoutJobData>,
   ) {}
 
-  // ─── Create ────────────────────────────────────────────────────────────────
-
   async createPost(authorId: string, dto: CreatePostDto) {
     const post = await this.prisma.post.create({
       data: { content: dto.content, authorId },
@@ -65,13 +63,12 @@ export class PostsService {
 
     this.logger.log(`Post created: ${post.id} by user ${authorId} (celebrity: ${post.author.isCelebrity})`);
 
-    // Populate FeedItem and enqueue fanout job
-    // Skips fanout enqueue if author is a celebrity
+    
+    
     await this.fanoutToFollowers(authorId, post.id, post.createdAt, post.author.isCelebrity);
 
     return post;
   }
-
 
   private async fanoutToFollowers(
     authorId: string,
@@ -79,7 +76,7 @@ export class PostsService {
     createdAt: Date,
     isCelebrity: boolean,
   ): Promise<void> {
-    // Synchronously add the post to the author's own timeline so they see it immediately
+    
     const timestamp = createdAt.getTime();
     
     await this.prisma.feedItem.create({
@@ -98,21 +95,19 @@ export class PostsService {
       return;
     }
 
-    // Enqueue the async fanout job for followers
+    
     await this.fanoutQueue.add(
       'fanout',
       { authorId, postId, timestamp },
       { 
-        jobId: `fanout-${postId}`, // Prevent duplicate fanout jobs (BullMQ forbids colons in custom IDs)
-        removeOnComplete: 100,     // Keep last 100 successful jobs for debugging
+        jobId: `fanout-${postId}`, 
+        removeOnComplete: 100,     
         removeOnFail: 500,
       }
     );
 
     this.logger.log(`Enqueued fanout job for post ${postId}`);
   }
-
-  // ─── Read ──────────────────────────────────────────────────────────────────
 
   async getPostById(postId: string) {
     const post = await this.prisma.post.findFirst({
@@ -152,8 +147,6 @@ export class PostsService {
     return { items, nextCursor, hasNextPage };
   }
 
-  // ─── Delete ────────────────────────────────────────────────────────────────
-
   async deletePost(postId: string, requesterId: string) {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, isDeleted: false },
@@ -164,7 +157,7 @@ export class PostsService {
       throw new ForbiddenException('You can only delete your own posts');
     }
 
-    // Soft delete — preserve data for analytics; hard purge can happen async
+    
     await this.prisma.post.update({
       where: { id: postId },
       data: { isDeleted: true },
@@ -172,8 +165,6 @@ export class PostsService {
 
     return { message: 'Post deleted' };
   }
-
-  // ─── Likes ─────────────────────────────────────────────────────────────────
 
   async likePost(userId: string, postId: string) {
     const post = await this.prisma.post.findFirst({
@@ -216,8 +207,6 @@ export class PostsService {
 
     return { message: 'Post unliked' };
   }
-
-  // ─── Comments ──────────────────────────────────────────────────────────────
 
   async addComment(userId: string, postId: string, dto: CreateCommentDto) {
     const post = await this.prisma.post.findFirst({

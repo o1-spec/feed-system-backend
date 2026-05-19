@@ -30,8 +30,6 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  // ─── Register ──────────────────────────────────────────────────────────────
-
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findFirst({
       where: {
@@ -69,15 +67,13 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  // ─── Login ─────────────────────────────────────────────────────────────────
-
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
       select: { id: true, username: true, email: true, passwordHash: true },
     });
 
-    // Constant-time comparison — avoid timing attacks by always calling compare
+    
     const isPasswordValid =
       user !== null && (await bcrypt.compare(dto.password, user.passwordHash));
 
@@ -94,18 +90,14 @@ export class AuthService {
     };
   }
 
-  // ─── Logout ────────────────────────────────────────────────────────────────
-
   async logout(userId: string): Promise<void> {
-    // Null out stored hash — invalidates all refresh tokens for this user
+    
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },
     });
     this.logger.log(`User logged out: ${userId}`);
   }
-
-  // ─── Refresh ───────────────────────────────────────────────────────────────
 
   async validateRefreshToken(userId: string, rawToken: string) {
     const user = await this.prisma.user.findUnique({
@@ -128,8 +120,6 @@ export class AuthService {
     await this.storeRefreshTokenHash(userId, tokens.refreshToken);
     return tokens;
   }
-
-  // ─── Helpers ───────────────────────────────────────────────────────────────
 
   private async generateTokens(
     userId: string,

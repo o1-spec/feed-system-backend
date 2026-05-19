@@ -1,5 +1,4 @@
-// Prisma Schema — News Feed System
-// Source of truth: PostgreSQL
+
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -10,9 +9,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─────────────────────────────────────────────
-// USER
-// ─────────────────────────────────────────────
 model User {
   id             String   @id @default(cuid())
   username       String   @unique
@@ -21,13 +17,13 @@ model User {
   displayName    String?
   bio            String?
   avatarUrl      String?
-  // Denormalized counters — avoid COUNT(*) on hot paths
+  
   followerCount  Int      @default(0)
   followingCount Int      @default(0)
-  // Celebrity flag: set true when followerCount >= CELEBRITY_THRESHOLD
-  // Celebrity posts skip fanout-on-write; merged at read time instead
+  
+  
   isCelebrity    Boolean  @default(false)
-  // Hashed refresh token stored for invalidation on logout
+  
   refreshToken   String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -44,14 +40,11 @@ model User {
   @@index([createdAt(sort: Desc)])
 }
 
-// ─────────────────────────────────────────────
-// POST
-// ─────────────────────────────────────────────
 model Post {
   id            String   @id @default(cuid())
   content       String   @db.Text
   authorId      String
-  // Denormalized counters for fast display without joins
+  
   likesCount    Int      @default(0)
   commentsCount Int      @default(0)
   isDeleted     Boolean  @default(false)
@@ -63,15 +56,12 @@ model Post {
   comments  Comment[]
   feedItems FeedItem[]
 
-  // Compound index: profile feed queries (posts by author, sorted by time)
+  
   @@index([authorId, createdAt(sort: Desc)])
-  // Global recency index: used in celebrity post merge at read time
+  
   @@index([createdAt(sort: Desc)])
 }
 
-// ─────────────────────────────────────────────
-// FOLLOW
-// ─────────────────────────────────────────────
 model Follow {
   id          String   @id @default(cuid())
   followerId  String
@@ -81,17 +71,14 @@ model Follow {
   follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
-  // Unique constraint prevents duplicate follows (idempotent)
+  
   @@unique([followerId, followingId])
-  // Who does this user follow? (fanout worker query)
+  
   @@index([followerId])
-  // Who follows this user? (follower list query)
+  
   @@index([followingId])
 }
 
-// ─────────────────────────────────────────────
-// LIKE
-// ─────────────────────────────────────────────
 model Like {
   id        String   @id @default(cuid())
   userId    String
@@ -101,14 +88,11 @@ model Like {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  // Unique constraint: idempotent likes (like twice = same result)
+  
   @@unique([userId, postId])
   @@index([postId])
 }
 
-// ─────────────────────────────────────────────
-// COMMENT
-// ─────────────────────────────────────────────
 model Comment {
   id        String   @id @default(cuid())
   content   String   @db.Text
@@ -121,25 +105,22 @@ model Comment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  // Comments on a post, sorted by time (main query pattern)
+  
   @@index([postId, createdAt(sort: Desc)])
 }
 
-// ─────────────────────────────────────────────
-// NOTIFICATION
-// ─────────────────────────────────────────────
 model Notification {
   id        String           @id @default(cuid())
-  userId    String           // recipient
-  actorId   String           // who triggered the notification
+  userId    String           
+  actorId   String           
   type      NotificationType
-  postId    String?          // relevant post (nullable for FOLLOW type)
+  postId    String?          
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Unread count query + paginated notification list
+  
   @@index([userId, isRead])
   @@index([userId, createdAt(sort: Desc)])
 }
@@ -151,21 +132,18 @@ enum NotificationType {
   MENTION
 }
 
-// ─────────────────────────────────────────────
-// FEED ITEM (Materialized Timeline)
-// ─────────────────────────────────────────────
 model FeedItem {
   id        String   @id @default(cuid())
-  userId    String   // timeline owner (follower)
-  postId    String   // post that appears in their feed
-  authorId  String   // post author (for celebrity merge filtering)
+  userId    String   
+  postId    String   
+  authorId  String   
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  // Prevent duplicate feed items (idempotent fanout)
+  
   @@unique([userId, postId])
-  // Primary read path: get user's feed sorted by time
+  
   @@index([userId, createdAt(sort: Desc)])
 }

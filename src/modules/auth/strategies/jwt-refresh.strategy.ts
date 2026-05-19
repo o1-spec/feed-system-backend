@@ -6,15 +6,6 @@ import { Request } from 'express';
 import { AuthService } from '../auth.service.js';
 import { JwtPayload } from '../interfaces/jwt-payload.interface.js';
 
-/**
- * JwtRefreshStrategy — validates refresh tokens sent in the request body.
- *
- * Why store the refresh token hash in DB instead of a purely stateless approach?
- * — Allows true logout: invalidating the stored hash revokes the refresh token.
- * — Stateless refresh tokens cannot be revoked before expiry — security risk.
- *
- * Trade-off: one DB lookup per token refresh (every 15 minutes max). Acceptable cost.
- */
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(

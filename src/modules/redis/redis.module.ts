@@ -13,7 +13,7 @@ import Redis from 'ioredis';
         return new Redis({
           host: configService.get<string>('redis.host'),
           port: configService.get<number>('redis.port'),
-          // Optional: password, etc.
+          
         });
       },
     },

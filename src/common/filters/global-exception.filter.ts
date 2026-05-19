@@ -16,14 +16,6 @@ interface ErrorResponse {
   timestamp: string;
 }
 
-/**
- * GlobalExceptionFilter — catches ALL exceptions and returns a consistent error shape.
- *
- * Why this matters:
- * — Clients should never get raw 500 stack traces in production.
- * — Uniform error structure makes frontend error handling simpler.
- * — Prisma errors (P2002, P2025, etc.) are mapped to meaningful HTTP codes.
- */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);

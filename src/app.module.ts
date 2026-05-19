@@ -20,17 +20,17 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 
 @Module({
   imports: [
-    // ConfigModule is global — no need to import in feature modules
+    
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
       envFilePath: '.env',
     }),
 
-    // PrismaModule is @Global — PrismaService available everywhere
+    
     PrismaModule,
 
-    // BullMQ configuration using global Redis settings
+    
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -41,7 +41,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
       }),
     }),
 
-    // Feature modules
+    
     RedisModule,
     TimelineModule,
     FanoutWorkerModule,
@@ -51,14 +51,14 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     FeedModule,
   ],
   providers: [
-    // Global JWT guard — every route is protected by default
-    // Use @Public() decorator to opt specific routes out
+    
+    
     { provide: APP_GUARD, useClass: JwtAuthGuard },
 
-    // Global exception filter — consistent error shape across all routes
+    
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
 
-    // Global interceptors — applied in declaration order
+    
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
   ],

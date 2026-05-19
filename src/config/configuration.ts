@@ -15,9 +15,9 @@ export default () => ({
   },
 
   feed: {
-    // Dev: 100, Production: 10_000
+    
     celebrityThreshold: parseInt(process.env.CELEBRITY_THRESHOLD || '100', 10),
-    // Max post IDs cached per user timeline in Redis
+    
     timelineCacheSize: parseInt(process.env.TIMELINE_CACHE_SIZE || '1000', 10),
   },
 });

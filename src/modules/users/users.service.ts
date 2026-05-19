@@ -10,7 +10,6 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { PaginationQueryDto } from './dto/pagination-query.dto.js';
 
-// Fields safe to expose in public profile responses
 const PUBLIC_USER_SELECT = {
   id: true,
   username: true,
@@ -23,7 +22,6 @@ const PUBLIC_USER_SELECT = {
   createdAt: true,
 } as const;
 
-// Cursor helpers — base64 encode/decode { id, createdAt }
 function encodeCursor(id: string, createdAt: Date): string {
   return Buffer.from(JSON.stringify({ id, createdAt: createdAt.toISOString() })).toString('base64');
 }
@@ -47,8 +45,6 @@ export class UsersService {
   ) {
     this.celebrityThreshold = this.configService.get<number>('feed.celebrityThreshold') ?? 100;
   }
-
-  // ─── Profile ───────────────────────────────────────────────────────────────
 
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -76,27 +72,25 @@ export class UsersService {
     });
   }
 
-  // ─── Follow / Unfollow ─────────────────────────────────────────────────────
-
   async follow(followerId: string, followingId: string) {
     if (followerId === followingId) {
       throw new BadRequestException('You cannot follow yourself');
     }
 
-    // Verify target user exists
+    
     const target = await this.prisma.user.findUnique({
       where: { id: followingId },
       select: { id: true, followerCount: true },
     });
     if (!target) throw new NotFoundException('User not found');
 
-    // Check for existing follow (idempotent)
+    
     const existing = await this.prisma.follow.findUnique({
       where: { followerId_followingId: { followerId, followingId } },
     });
     if (existing) throw new ConflictException('Already following this user');
 
-    // Transactional: create follow + increment both counters atomically
+    
     await this.prisma.$transaction([
       this.prisma.follow.create({ data: { followerId, followingId } }),
       this.prisma.user.update({
@@ -109,7 +103,7 @@ export class UsersService {
       }),
     ]);
 
-    // Check if target just crossed the celebrity threshold
+    
     const newCount = target.followerCount + 1;
     if (newCount >= this.celebrityThreshold) {
       await this.prisma.user.update({
@@ -146,7 +140,7 @@ export class UsersService {
       }),
     ]);
 
-    // Re-evaluate celebrity status on unfollow
+    
     const updated = await this.prisma.user.findUnique({
       where: { id: followingId },
       select: { followerCount: true, isCelebrity: true },
@@ -160,8 +154,6 @@ export class UsersService {
 
     return { message: 'Unfollowed successfully' };
   }
-
-  // ─── Follower / Following Lists ─────────────────────────────────────────────
 
   async getFollowers(userId: string, query: PaginationQueryDto) {
     const limit = query.limit ?? 20;

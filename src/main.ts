@@ -5,17 +5,17 @@ import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // Suppress verbose NestJS startup logs in production
+    
     logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug'],
   });
 
-  // ─── Global Prefix ─────────────────────────────────────────────────────────
+  
   app.setGlobalPrefix('api/v1');
 
-  // ─── Validation Pipe ───────────────────────────────────────────────────────
-  // whitelist: strips properties not in DTO — prevents mass assignment attacks
-  // forbidNonWhitelisted: throws 400 if unknown properties are sent
-  // transform: auto-converts query params (strings → numbers for @Type(() => Number))
+  
+  
+  
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -25,13 +25,13 @@ async function bootstrap() {
     }),
   );
 
-  // ─── CORS ──────────────────────────────────────────────────────────────────
+  
   app.enableCors({
     origin: process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:3001'],
     credentials: true,
   });
 
-  // ─── Swagger API Docs ──────────────────────────────────────────────────────
+  
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Feed System API')
@@ -52,7 +52,7 @@ async function bootstrap() {
     });
   }
 
-  // ─── Start ─────────────────────────────────────────────────────────────────
+  
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`\n🚀 Feed System API running at: http://localhost:${port}/api/v1`);

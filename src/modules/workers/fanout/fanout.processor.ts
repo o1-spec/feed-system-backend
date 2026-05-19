@@ -22,8 +22,8 @@ export class FanoutProcessor extends WorkerHost {
 
     this.logger.log(`Processing fanout for post ${postId} by author ${authorId}`);
 
-    // Fetch all followers in chunks to avoid blowing up memory for huge accounts
-    // We skip this entirely for celebrity accounts
+    
+    
     const CHUNK_SIZE = 500;
     let skip = 0;
     let totalFannedOut = 0;
@@ -38,7 +38,7 @@ export class FanoutProcessor extends WorkerHost {
 
       if (followers.length === 0) break;
 
-      // 1. PostgreSQL Materialization
+      
       await this.prisma.feedItem.createMany({
         data: followers.map((f) => ({
           userId: f.followerId,
@@ -49,7 +49,7 @@ export class FanoutProcessor extends WorkerHost {
         skipDuplicates: true,
       });
 
-      // 2. Redis Cache Update
+      
       await Promise.all(
         followers.map((f) =>
           this.timelineService.addPostToTimeline(f.followerId, postId, timestamp)
