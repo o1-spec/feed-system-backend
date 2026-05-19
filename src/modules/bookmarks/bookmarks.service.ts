@@ -12,7 +12,7 @@ export class BookmarksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async bookmarkPost(userId: string, postId: string) {
-    // 1. Check if post exists and is not deleted
+    
     const post = await this.prisma.post.findFirst({
       where: { id: postId, isDeleted: false },
       select: { id: true },
@@ -21,7 +21,7 @@ export class BookmarksService {
       throw new NotFoundException('Post not found');
     }
 
-    // 2. Check if already bookmarked
+    
     const existing = await this.prisma.bookmark.findUnique({
       where: {
         userId_postId: { userId, postId },
@@ -32,7 +32,7 @@ export class BookmarksService {
       throw new ConflictException('Post already bookmarked');
     }
 
-    // 3. Create bookmark
+    
     return this.prisma.bookmark.create({
       data: { userId, postId },
       select: {

@@ -222,14 +222,14 @@ export class UsersService {
   async getSuggested(userId: string, query: PaginationQueryDto) {
     const limit = query.limit ?? 20;
 
-    // Get list of followed user IDs to exclude
+    
     const followed = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
     });
     const followedIds = followed.map((f) => f.followingId);
 
-    // Find other users that are not followed and not the user themselves
+    
     const users = await this.prisma.user.findMany({
       where: {
         id: {

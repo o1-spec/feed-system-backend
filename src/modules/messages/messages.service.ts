@@ -18,7 +18,7 @@ export class MessagesService {
       throw new BadRequestException('You cannot send a message to yourself');
     }
 
-    // 1. Verify recipient exists
+    
     const receiver = await this.prisma.user.findUnique({
       where: { id: receiverId },
       select: { id: true },
@@ -27,7 +27,7 @@ export class MessagesService {
       throw new NotFoundException('Recipient user not found');
     }
 
-    // 2. Create the message record
+    
     return this.prisma.message.create({
       data: {
         senderId,
@@ -96,7 +96,7 @@ export class MessagesService {
   }
 
   async getConversationThread(userId: string, partnerId: string, query: PaginationQueryDto) {
-    // Verify partner exists
+    
     const partner = await this.prisma.user.findUnique({
       where: { id: partnerId },
       select: { id: true },
@@ -146,8 +146,8 @@ export class MessagesService {
     const last = items[items.length - 1];
     const nextCursor = hasNextPage && last ? this.encodeCursor(last.id, last.createdAt) : null;
 
-    // Direct message logs are returned reversed (oldest-to-newest) for immediate rendering on frontend,
-    // while backward pagination is correctly supported behind-the-scenes
+    
+    
     return {
       items: [...items].reverse(),
       nextCursor,

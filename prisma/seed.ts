@@ -4,12 +4,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import Redis from 'ioredis';
 import * as bcrypt from 'bcrypt';
 
-// Pre-configured constants
-const BCRYPT_ROUNDS = 10; // slightly lower rounds for seed velocity
+const BCRYPT_ROUNDS = 10; 
 const CELEBRITY_THRESHOLD = 100;
 const TIMELINE_CACHE_SIZE = 1000;
 
-// Setup connections
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -19,7 +17,6 @@ const redis = new Redis({
   port: parseInt(process.env.REDIS_PORT || '6383', 10),
 });
 
-// Realistic Content Templates
 const POST_TOPICS = [
   {
     topic: 'system_design',
@@ -86,19 +83,16 @@ const COMMENT_TEMPLATES = [
   "Could you share a schema snippet? I'm curious about the indexing setup."
 ];
 
-// Helper to generate random date within a range
 function getRandomDate(daysBack: number): Date {
   const now = Date.now();
   const offset = Math.random() * daysBack * 24 * 60 * 60 * 1000;
   return new Date(now - offset);
 }
 
-// Helper to pick random item
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Helper to pick random count of items
 function pickRandomSubset<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
@@ -107,7 +101,7 @@ function pickRandomSubset<T>(arr: T[], count: number): T[] {
 async function main() {
   console.log('🚀 Initiating database seeding script...');
 
-  // 1. CLEAR STALE DATA (Truncate with correct FK deletion order)
+  
   console.log('🧹 Clearing existing database data safely...');
   
   await prisma.feedItem.deleteMany({});
@@ -120,7 +114,7 @@ async function main() {
 
   console.log('✨ Database cleared.');
 
-  // 2. CLEAR REDIS CACHE
+  
   console.log('🧹 Clearing Redis timeline cache keys...');
   const keys = await redis.keys('timeline:*');
   if (keys.length > 0) {
@@ -130,15 +124,15 @@ async function main() {
     console.log('🟢 Redis was already clean.');
   }
 
-  // 3. PRE-COMPUTE COMMON HASH
+  
   console.log('🔐 Pre-computing password hash for seed velocity...');
   const COMMON_HASH = await bcrypt.hash('Password123!', BCRYPT_ROUNDS);
   console.log('🔑 Password hash ready.');
 
-  // 4. SEED USERS
+  
   console.log('👤 Seeding users...');
   
-  // Create Demo normal user
+  
   const demoUser = await prisma.user.create({
     data: {
       email: 'demo@feed.dev',
@@ -151,7 +145,7 @@ async function main() {
     }
   });
 
-  // Create Celebrity user
+  
   const celebrityUser = await prisma.user.create({
     data: {
       email: 'celebrity@feed.dev',
@@ -164,7 +158,7 @@ async function main() {
     }
   });
 
-  // Create 100 normal users
+  
   const normalUsersData: any[] = [];
   const engineerRoles = ['Backend Developer', 'System Architect', 'Frontend Lead', 'DevOps Specialist', 'Fullstack Engineer', 'VP of Product', 'UX Engineer'];
   const engineerTechs = ['NestJS', 'TypeScript', 'Prisma', 'PostgreSQL', 'Redis', 'BullMQ', 'Docker', 'Kubernetes', 'Next.js', 'Go', 'Rust'];
@@ -184,7 +178,7 @@ async function main() {
     });
   }
 
-  // Create normal users in chunks to be safe
+  
   await prisma.user.createMany({
     data: normalUsersData,
   });
@@ -200,11 +194,11 @@ async function main() {
 
   console.log(`✅ Seeded ${normalUsers.length + 2} users (1 demo, 1 celebrity, ${normalUsers.length} mock normal users).`);
 
-  // 5. SEED FOLLOWS
+  
   console.log('🔗 Seeding follow relationships...');
   const followsToCreate: any[] = [];
 
-  // Make ALL 100 normal users follow the Celebrity User (so celebrity has 100 followers)
+  
   for (const user of normalUsers) {
     followsToCreate.push({
       followerId: user.id,
@@ -212,7 +206,7 @@ async function main() {
     });
   }
 
-  // Make Demo user follow several normal users + the celebrity
+  
   const demoFollowingCount = 25;
   const demoFollowees = pickRandomSubset(normalUsers, demoFollowingCount);
   for (const followee of demoFollowees) {
@@ -221,13 +215,13 @@ async function main() {
       followingId: followee.id,
     });
   }
-  // Demo also follows celebrity
+  
   followsToCreate.push({
     followerId: demoUser.id,
     followingId: celebrityUser.id,
   });
 
-  // Make 5 normal users follow Demo User (so demo has followers and follow notifications!)
+  
   const demoFollowersSubset = pickRandomSubset(normalUsers, 5);
   for (const follower of demoFollowersSubset) {
     followsToCreate.push({
@@ -236,8 +230,8 @@ async function main() {
     });
   }
 
-  // Make normal users follow each other in a structured ring network to create a beautiful data graph
-  // Each user follows 4 other normal users in a circular ring
+  
+  
   for (let i = 0; i < normalUsers.length; i++) {
     const follower = normalUsers[i];
     for (let offset = 1; offset <= 4; offset++) {
@@ -250,7 +244,7 @@ async function main() {
     }
   }
 
-  // Insert follows
+  
   await prisma.follow.createMany({
     data: followsToCreate,
     skipDuplicates: true,
@@ -258,7 +252,7 @@ async function main() {
 
   console.log(`✅ Seeded follows.`);
 
-  // Update counts (followerCount and followingCount) programmatically for exact accuracy
+  
   console.log('📊 Synchronizing follower and following counts across profiles...');
   const users = await prisma.user.findMany({
     select: { id: true }
@@ -273,7 +267,7 @@ async function main() {
       data: {
         followerCount: followers,
         followingCount: following,
-        // Promote dynamically to celebrity if they pass the threshold
+        
         isCelebrity: u.id === celebrityUser.id || followers >= CELEBRITY_THRESHOLD,
       }
     });
@@ -281,14 +275,14 @@ async function main() {
 
   console.log('✅ Synchronized follower and following metrics.');
 
-  // 6. SEED POSTS
+  
   console.log('📝 Seeding tech and social posts...');
   const postsToCreate: any[] = [];
 
-  // Seed celebrity posts (including very recent ones)
+  
   const celebrityPostTimes = [
-    getRandomDate(0.2), // today
-    getRandomDate(1),   // yesterday
+    getRandomDate(0.2), 
+    getRandomDate(1),   
     getRandomDate(2.5),
     getRandomDate(4),
     getRandomDate(6),
@@ -305,7 +299,7 @@ async function main() {
     });
   });
 
-  // Seed demo user posts
+  
   const demoPostTimes = [
     getRandomDate(1.2),
     getRandomDate(3.5),
@@ -320,11 +314,11 @@ async function main() {
     });
   });
 
-  // Seed normal users posts (each user creates between 5 to 7 posts, giving ~600 posts total)
+  
   for (const user of normalUsers) {
-    const postCount = Math.floor(Math.random() * 3) + 5; // 5 to 7 posts
+    const postCount = Math.floor(Math.random() * 3) + 5; 
     for (let p = 0; p < postCount; p++) {
-      const date = getRandomDate(14); // spread across 14 days
+      const date = getRandomDate(14); 
       const topic = pickRandom(POST_TOPICS);
       postsToCreate.push({
         authorId: user.id,
@@ -335,7 +329,7 @@ async function main() {
     }
   }
 
-  // Insert posts in chunks to prevent database transaction memory overflow
+  
   const CHUNK_SIZE = 100;
   for (let i = 0; i < postsToCreate.length; i += CHUNK_SIZE) {
     const chunk = postsToCreate.slice(i, i + CHUNK_SIZE);
@@ -344,22 +338,22 @@ async function main() {
     });
   }
 
-  // Retrieve all created posts from database
+  
   const allPosts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
   });
 
   console.log(`✅ Seeded ${allPosts.length} posts across all users.`);
 
-  // 7. SEED LIKES & COMMENTS
+  
   console.log('❤️  Seeding likes and comments...');
   const likesToCreate: any[] = [];
   const commentsToCreate: any[] = [];
 
-  // To prevent constraint violations, keep track of post-user pairs
+  
   const uniqueLikes = new Set<string>();
 
-  // Helper to register unique like
+  
   const registerLike = (userId: string, postId: string) => {
     const pair = `${userId}_${postId}`;
     if (!uniqueLikes.has(pair)) {
@@ -370,20 +364,20 @@ async function main() {
     return false;
   };
 
-  // Ensure celebrity posts get plenty of likes
+  
   const celebrityPosts = allPosts.filter(p => p.authorId === celebrityUser.id);
   const demoPosts = allPosts.filter(p => p.authorId === demoUser.id);
   const normalPosts = allPosts.filter(p => p.authorId !== celebrityUser.id);
 
-  // celebrity posts get highly liked
+  
   for (const post of celebrityPosts) {
-    const likers = pickRandomSubset(normalUsers, Math.floor(Math.random() * 40) + 40); // 40-80 likes
+    const likers = pickRandomSubset(normalUsers, Math.floor(Math.random() * 40) + 40); 
     for (const liker of likers) {
       registerLike(liker.id, post.id);
     }
     registerLike(demoUser.id, post.id);
 
-    // celebrity posts also get many comments
+    
     const commenters = pickRandomSubset(normalUsers, Math.floor(Math.random() * 5) + 3);
     for (const commenter of commenters) {
       commentsToCreate.push({
@@ -395,16 +389,16 @@ async function main() {
     }
   }
 
-  // normal posts get random likes and comments
+  
   for (const post of normalPosts) {
-    // 2-8 likes
+    
     const likeCount = Math.floor(Math.random() * 7) + 2;
     const likers = pickRandomSubset([demoUser, ...normalUsers].filter(u => u.id !== post.authorId), likeCount);
     for (const liker of likers) {
       registerLike(liker.id, post.id);
     }
 
-    // 10% chance of comment
+    
     if (Math.random() < 0.25) {
       const commenter = pickRandom([demoUser, ...normalUsers].filter(u => u.id !== post.authorId));
       commentsToCreate.push({
@@ -416,7 +410,7 @@ async function main() {
     }
   }
 
-  // Insert likes
+  
   for (let i = 0; i < likesToCreate.length; i += CHUNK_SIZE) {
     const chunk = likesToCreate.slice(i, i + CHUNK_SIZE);
     await prisma.like.createMany({
@@ -424,7 +418,7 @@ async function main() {
     });
   }
 
-  // Insert comments
+  
   for (let i = 0; i < commentsToCreate.length; i += CHUNK_SIZE) {
     const chunk = commentsToCreate.slice(i, i + CHUNK_SIZE);
     await prisma.comment.createMany({
@@ -434,7 +428,7 @@ async function main() {
 
   console.log(`✅ Seeded ${likesToCreate.length} likes and ${commentsToCreate.length} comments.`);
 
-  // Synchronize counts back to PostgreSQL Post records
+  
   console.log('📊 Synchronizing likes and comments metrics on Post records...');
   const posts = await prisma.post.findMany({ select: { id: true } });
   for (const post of posts) {
@@ -450,12 +444,12 @@ async function main() {
   }
   console.log('✅ Synchronized post metrics.');
 
-  // 8. SEED NOTIFICATIONS
+  
   console.log('🔔 Seeding high-fidelity notifications center records...');
   const notificationsToCreate: any[] = [];
 
-  // Create notifications for the Demo User so they see rich activity upon logging in
-  // 1. Follow notification
+  
+  
   const demoFollowers = followsToCreate.filter(f => f.followingId === demoUser.id);
   for (const follow of demoFollowers.slice(0, 5)) {
     notificationsToCreate.push({
@@ -467,7 +461,7 @@ async function main() {
     });
   }
 
-  // 2. Likes on Demo posts
+  
   for (const post of demoPosts) {
     const postLikes = likesToCreate.filter(l => l.postId === post.id);
     for (const like of postLikes.slice(0, 3)) {
@@ -482,19 +476,19 @@ async function main() {
     }
   }
 
-  // Insert notifications
+  
   await prisma.notification.createMany({
     data: notificationsToCreate,
   });
 
   console.log(`✅ Seeded ${notificationsToCreate.length} notification entries.`);
 
-  // 9. SEED FEEDITEM TABLE (PostgreSQL Materialized Timelines)
+  
   console.log('🧩 Materializing relational FeedItem table (PostgreSQL timeline cache)...');
   
-  // Query all follows
+  
   const follows = await prisma.follow.findMany({});
-  const followMap = new Map<string, string[]>(); // followerId -> followingIds[]
+  const followMap = new Map<string, string[]>(); 
   for (const f of follows) {
     if (!followMap.has(f.followerId)) {
       followMap.set(f.followerId, []);
@@ -508,13 +502,13 @@ async function main() {
     const followedIds = followMap.get(user.id) || [];
     if (followedIds.length === 0) continue;
 
-    // Fetch posts written by people they follow
-    // CRITICAL: Filter out Celebrity posts so they remain strictly read-path fanout-on-read!
+    
+    
     const followedPosts = allPosts.filter(p => 
       followedIds.includes(p.authorId) && p.authorId !== celebrityUser.id
     );
 
-    // Limit to latest 100 for database index efficiency in seed script
+    
     const latestPosts = followedPosts.slice(0, 100);
 
     for (const post of latestPosts) {
@@ -527,7 +521,7 @@ async function main() {
     }
   }
 
-  // Insert feed items
+  
   for (let i = 0; i < feedItemsToCreate.length; i += CHUNK_SIZE) {
     const chunk = feedItemsToCreate.slice(i, i + CHUNK_SIZE);
     await prisma.feedItem.createMany({
@@ -538,7 +532,7 @@ async function main() {
 
   console.log(`✅ Materialized ${feedItemsToCreate.length} FeedItem entries in PostgreSQL.`);
 
-  // 10. REBUILD REDIS TIMELINES
+  
   console.log('⚡ Rebuilding Redis Sorted Sets timeline caches (timeline:{userId})...');
 
   let rebuiltRedisTimelinesCount = 0;
@@ -546,10 +540,10 @@ async function main() {
   for (const user of [demoUser, ...normalUsers]) {
     const followedIds = followMap.get(user.id) || [];
     
-    // Add user's own posts to their timeline
+    
     const ownPosts = allPosts.filter(p => p.authorId === user.id);
 
-    // Get posts of followed normal users (ignore celebrity posts for hybrid feed architecture)
+    
     const followedPosts = allPosts.filter(p => 
       followedIds.includes(p.authorId) && p.authorId !== celebrityUser.id
     );
@@ -557,10 +551,10 @@ async function main() {
     const mergedFeedPosts = [...ownPosts, ...followedPosts];
     if (mergedFeedPosts.length === 0) continue;
 
-    // Sort chronologically descending
+    
     mergedFeedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // Trim to latest TIMELINE_CACHE_SIZE (1000) posts
+    
     const trimmedPosts = mergedFeedPosts.slice(0, TIMELINE_CACHE_SIZE);
 
     const timelineKey = `timeline:${user.id}`;
@@ -570,14 +564,14 @@ async function main() {
       pipeline.zadd(timelineKey, post.createdAt.getTime(), post.id);
     }
 
-    // Execute pipeline
+    
     await pipeline.exec();
     rebuiltRedisTimelinesCount++;
   }
 
   console.log(`✅ Rebuilt Redis timeline Sorted Sets for ${rebuiltRedisTimelinesCount} users.`);
 
-  // 11. SHUTDOWN CONNECTIONS
+  
   console.log('🔌 Shutting down client database and memory connections safely...');
   await prisma.$disconnect();
   await pool.end();
