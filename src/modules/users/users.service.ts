@@ -16,6 +16,7 @@ const PUBLIC_USER_SELECT = {
   displayName: true,
   bio: true,
   avatarUrl: true,
+  coverUrl: true,
   followerCount: true,
   followingCount: true,
   isCelebrity: true,

@@ -18,6 +18,7 @@ import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
 const POST_SELECT = {
   id: true,
   content: true,
+  imageUrl: true,
   likesCount: true,
   commentsCount: true,
   createdAt: true,
@@ -57,7 +58,7 @@ export class PostsService {
 
   async createPost(authorId: string, dto: CreatePostDto) {
     const post = await this.prisma.post.create({
-      data: { content: dto.content, authorId },
+      data: { content: dto.content, authorId, imageUrl: dto.imageUrl },
       select: POST_SELECT,
     });
 
@@ -217,10 +218,11 @@ export class PostsService {
 
     const [comment] = await this.prisma.$transaction([
       this.prisma.comment.create({
-        data: { content: dto.content, userId, postId },
+        data: { content: dto.content, userId, postId, imageUrl: dto.imageUrl },
         select: {
           id: true,
           content: true,
+          imageUrl: true,
           createdAt: true,
           user: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
         },
@@ -253,6 +255,7 @@ export class PostsService {
       select: {
         id: true,
         content: true,
+        imageUrl: true,
         createdAt: true,
         user: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
       },

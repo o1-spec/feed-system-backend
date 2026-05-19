@@ -86,6 +86,7 @@ export const UserScalarFieldEnum = {
   displayName: 'displayName',
   bio: 'bio',
   avatarUrl: 'avatarUrl',
+  coverUrl: 'coverUrl',
   followerCount: 'followerCount',
   followingCount: 'followingCount',
   isCelebrity: 'isCelebrity',
@@ -100,6 +101,7 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 export const PostScalarFieldEnum = {
   id: 'id',
   content: 'content',
+  imageUrl: 'imageUrl',
   authorId: 'authorId',
   likesCount: 'likesCount',
   commentsCount: 'commentsCount',
@@ -134,6 +136,7 @@ export type LikeScalarFieldEnum = (typeof LikeScalarFieldEnum)[keyof typeof Like
 export const CommentScalarFieldEnum = {
   id: 'id',
   content: 'content',
+  imageUrl: 'imageUrl',
   userId: 'userId',
   postId: 'postId',
   isDeleted: 'isDeleted',

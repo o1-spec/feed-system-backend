@@ -18,4 +18,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsUrl()
   avatarUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/cover.jpg' })
+  @IsOptional()
+  @IsUrl()
+  coverUrl?: string;
 }

@@ -14,6 +14,7 @@ import { TimelineModule } from './modules/timeline/timeline.module.js';
 import { FanoutWorkerModule } from './modules/workers/fanout/fanout.module.js';
 import { BookmarksModule } from './modules/bookmarks/bookmarks.module.js';
 import { MessagesModule } from './modules/messages/messages.module.js';
+import { UploadModule } from './modules/upload/upload.module.js';
 
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
@@ -53,6 +54,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     FeedModule,
     BookmarksModule,
     MessagesModule,
+    UploadModule,
   ],
   providers: [
     

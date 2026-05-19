@@ -44,6 +44,7 @@ export type UserMinAggregateOutputType = {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  coverUrl: string | null
   followerCount: number | null
   followingCount: number | null
   isCelebrity: boolean | null
@@ -60,6 +61,7 @@ export type UserMaxAggregateOutputType = {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  coverUrl: string | null
   followerCount: number | null
   followingCount: number | null
   isCelebrity: boolean | null
@@ -76,6 +78,7 @@ export type UserCountAggregateOutputType = {
   displayName: number
   bio: number
   avatarUrl: number
+  coverUrl: number
   followerCount: number
   followingCount: number
   isCelebrity: number
@@ -104,6 +107,7 @@ export type UserMinAggregateInputType = {
   displayName?: true
   bio?: true
   avatarUrl?: true
+  coverUrl?: true
   followerCount?: true
   followingCount?: true
   isCelebrity?: true
@@ -120,6 +124,7 @@ export type UserMaxAggregateInputType = {
   displayName?: true
   bio?: true
   avatarUrl?: true
+  coverUrl?: true
   followerCount?: true
   followingCount?: true
   isCelebrity?: true
@@ -136,6 +141,7 @@ export type UserCountAggregateInputType = {
   displayName?: true
   bio?: true
   avatarUrl?: true
+  coverUrl?: true
   followerCount?: true
   followingCount?: true
   isCelebrity?: true
@@ -239,6 +245,7 @@ export type UserGroupByOutputType = {
   displayName: string | null
   bio: string | null
   avatarUrl: string | null
+  coverUrl: string | null
   followerCount: number
   followingCount: number
   isCelebrity: boolean
@@ -278,6 +285,7 @@ export type UserWhereInput = {
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  coverUrl?: Prisma.StringNullableFilter<"User"> | string | null
   followerCount?: Prisma.IntFilter<"User"> | number
   followingCount?: Prisma.IntFilter<"User"> | number
   isCelebrity?: Prisma.BoolFilter<"User"> | boolean
@@ -304,6 +312,7 @@ export type UserOrderByWithRelationInput = {
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   followerCount?: Prisma.SortOrder
   followingCount?: Prisma.SortOrder
   isCelebrity?: Prisma.SortOrder
@@ -333,6 +342,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  coverUrl?: Prisma.StringNullableFilter<"User"> | string | null
   followerCount?: Prisma.IntFilter<"User"> | number
   followingCount?: Prisma.IntFilter<"User"> | number
   isCelebrity?: Prisma.BoolFilter<"User"> | boolean
@@ -359,6 +369,7 @@ export type UserOrderByWithAggregationInput = {
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   followerCount?: Prisma.SortOrder
   followingCount?: Prisma.SortOrder
   isCelebrity?: Prisma.SortOrder
@@ -383,6 +394,7 @@ export type UserScalarWhereWithAggregatesInput = {
   displayName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   bio?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  coverUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   followerCount?: Prisma.IntWithAggregatesFilter<"User"> | number
   followingCount?: Prisma.IntWithAggregatesFilter<"User"> | number
   isCelebrity?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
@@ -399,6 +411,7 @@ export type UserCreateInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -425,6 +438,7 @@ export type UserUncheckedCreateInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -451,6 +465,7 @@ export type UserUpdateInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -477,6 +492,7 @@ export type UserUncheckedUpdateInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -503,6 +519,7 @@ export type UserCreateManyInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -519,6 +536,7 @@ export type UserUpdateManyMutationInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -535,6 +553,7 @@ export type UserUncheckedUpdateManyInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -551,6 +570,7 @@ export type UserCountOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
   followerCount?: Prisma.SortOrder
   followingCount?: Prisma.SortOrder
   isCelebrity?: Prisma.SortOrder
@@ -572,6 +592,7 @@ export type UserMaxOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
   followerCount?: Prisma.SortOrder
   followingCount?: Prisma.SortOrder
   isCelebrity?: Prisma.SortOrder
@@ -588,6 +609,7 @@ export type UserMinOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
   followerCount?: Prisma.SortOrder
   followingCount?: Prisma.SortOrder
   isCelebrity?: Prisma.SortOrder
@@ -778,6 +800,7 @@ export type UserCreateWithoutPostsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -803,6 +826,7 @@ export type UserUncheckedCreateWithoutPostsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -844,6 +868,7 @@ export type UserUpdateWithoutPostsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -869,6 +894,7 @@ export type UserUncheckedUpdateWithoutPostsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -894,6 +920,7 @@ export type UserCreateWithoutFollowingInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -919,6 +946,7 @@ export type UserUncheckedCreateWithoutFollowingInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -949,6 +977,7 @@ export type UserCreateWithoutFollowersInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -974,6 +1003,7 @@ export type UserUncheckedCreateWithoutFollowersInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1015,6 +1045,7 @@ export type UserUpdateWithoutFollowingInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1040,6 +1071,7 @@ export type UserUncheckedUpdateWithoutFollowingInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1076,6 +1108,7 @@ export type UserUpdateWithoutFollowersInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1101,6 +1134,7 @@ export type UserUncheckedUpdateWithoutFollowersInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1126,6 +1160,7 @@ export type UserCreateWithoutLikesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1151,6 +1186,7 @@ export type UserUncheckedCreateWithoutLikesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1192,6 +1228,7 @@ export type UserUpdateWithoutLikesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1217,6 +1254,7 @@ export type UserUncheckedUpdateWithoutLikesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1242,6 +1280,7 @@ export type UserCreateWithoutCommentsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1267,6 +1306,7 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1308,6 +1348,7 @@ export type UserUpdateWithoutCommentsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1333,6 +1374,7 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1358,6 +1400,7 @@ export type UserCreateWithoutNotificationsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1383,6 +1426,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1424,6 +1468,7 @@ export type UserUpdateWithoutNotificationsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1449,6 +1494,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1474,6 +1520,7 @@ export type UserCreateWithoutFeedItemsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1499,6 +1546,7 @@ export type UserUncheckedCreateWithoutFeedItemsInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1540,6 +1588,7 @@ export type UserUpdateWithoutFeedItemsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1565,6 +1614,7 @@ export type UserUncheckedUpdateWithoutFeedItemsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1590,6 +1640,7 @@ export type UserCreateWithoutBookmarksInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1615,6 +1666,7 @@ export type UserUncheckedCreateWithoutBookmarksInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1656,6 +1708,7 @@ export type UserUpdateWithoutBookmarksInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1681,6 +1734,7 @@ export type UserUncheckedUpdateWithoutBookmarksInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1706,6 +1760,7 @@ export type UserCreateWithoutSentMessagesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1731,6 +1786,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1761,6 +1817,7 @@ export type UserCreateWithoutReceivedMessagesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1786,6 +1843,7 @@ export type UserUncheckedCreateWithoutReceivedMessagesInput = {
   displayName?: string | null
   bio?: string | null
   avatarUrl?: string | null
+  coverUrl?: string | null
   followerCount?: number
   followingCount?: number
   isCelebrity?: boolean
@@ -1827,6 +1885,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1852,6 +1911,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1888,6 +1948,7 @@ export type UserUpdateWithoutReceivedMessagesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1913,6 +1974,7 @@ export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   followerCount?: Prisma.IntFieldUpdateOperationsInput | number
   followingCount?: Prisma.IntFieldUpdateOperationsInput | number
   isCelebrity?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2050,6 +2112,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   displayName?: boolean
   bio?: boolean
   avatarUrl?: boolean
+  coverUrl?: boolean
   followerCount?: boolean
   followingCount?: boolean
   isCelebrity?: boolean
@@ -2077,6 +2140,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   displayName?: boolean
   bio?: boolean
   avatarUrl?: boolean
+  coverUrl?: boolean
   followerCount?: boolean
   followingCount?: boolean
   isCelebrity?: boolean
@@ -2093,6 +2157,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   displayName?: boolean
   bio?: boolean
   avatarUrl?: boolean
+  coverUrl?: boolean
   followerCount?: boolean
   followingCount?: boolean
   isCelebrity?: boolean
@@ -2109,6 +2174,7 @@ export type UserSelectScalar = {
   displayName?: boolean
   bio?: boolean
   avatarUrl?: boolean
+  coverUrl?: boolean
   followerCount?: boolean
   followingCount?: boolean
   isCelebrity?: boolean
@@ -2117,7 +2183,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "passwordHash" | "displayName" | "bio" | "avatarUrl" | "followerCount" | "followingCount" | "isCelebrity" | "refreshToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "passwordHash" | "displayName" | "bio" | "avatarUrl" | "coverUrl" | "followerCount" | "followingCount" | "isCelebrity" | "refreshToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   posts?: boolean | Prisma.User$postsArgs<ExtArgs>
   likes?: boolean | Prisma.User$likesArgs<ExtArgs>
@@ -2156,6 +2222,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     displayName: string | null
     bio: string | null
     avatarUrl: string | null
+    coverUrl: string | null
     followerCount: number
     followingCount: number
     isCelebrity: boolean
@@ -2602,6 +2669,7 @@ export interface UserFieldRefs {
   readonly displayName: Prisma.FieldRef<"User", 'String'>
   readonly bio: Prisma.FieldRef<"User", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"User", 'String'>
+  readonly coverUrl: Prisma.FieldRef<"User", 'String'>
   readonly followerCount: Prisma.FieldRef<"User", 'Int'>
   readonly followingCount: Prisma.FieldRef<"User", 'Int'>
   readonly isCelebrity: Prisma.FieldRef<"User", 'Boolean'>

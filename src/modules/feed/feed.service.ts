@@ -8,6 +8,7 @@ const FEED_POST_SELECT = {
     select: {
       id: true,
       content: true,
+      imageUrl: true,
       likesCount: true,
       commentsCount: true,
       createdAt: true,

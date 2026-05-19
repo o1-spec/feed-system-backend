@@ -20,4 +20,10 @@ export default () => ({
     
     timelineCacheSize: parseInt(process.env.TIMELINE_CACHE_SIZE || '1000', 10),
   },
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 });

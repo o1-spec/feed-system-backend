@@ -17,6 +17,7 @@ model User {
   displayName    String?
   bio            String?
   avatarUrl      String?
+  coverUrl       String?
   
   followerCount  Int      @default(0)
   followingCount Int      @default(0)
@@ -46,6 +47,7 @@ model User {
 model Post {
   id            String   @id @default(cuid())
   content       String   @db.Text
+  imageUrl      String?
   authorId      String
   
   likesCount    Int      @default(0)
@@ -100,6 +102,7 @@ model Like {
 model Comment {
   id        String   @id @default(cuid())
   content   String   @db.Text
+  imageUrl  String?
   userId    String
   postId    String
   isDeleted Boolean  @default(false)
