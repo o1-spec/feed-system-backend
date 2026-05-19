@@ -26,13 +26,20 @@ const FEED_POST_SELECT = {
   id: true,
 } as const;
 
-function encodeCursor(id: string, createdAt: Date): string {
-  return Buffer.from(JSON.stringify({ id, createdAt: createdAt.toISOString() })).toString('base64');
+function encodeCursor(id: string, createdAt: Date, weight: number = 0): string {
+  return Buffer.from(
+    JSON.stringify({ id, createdAt: createdAt.toISOString(), weight })
+  ).toString('base64');
 }
 
-function decodeCursor(cursor: string): { id: string; createdAt: string } {
+function decodeCursor(cursor: string): { id: string; createdAt: string; weight: number } {
   try {
-    return JSON.parse(Buffer.from(cursor, 'base64').toString('utf8'));
+    const parsed = JSON.parse(Buffer.from(cursor, 'base64').toString('utf8'));
+    return {
+      id: parsed.id,
+      createdAt: parsed.createdAt,
+      weight: parsed.weight ?? 0,
+    };
   } catch {
     throw new BadRequestException('Invalid pagination cursor');
   }
@@ -47,96 +54,114 @@ export class FeedService {
     private readonly timelineService: TimelineService,
   ) {}
 
-  
   async getHomeFeed(userId: string, query: FeedQueryDto) {
     const limit = query.limit ?? 20;
-    
+
+    let cursorWeight = 2; // Default starting weight (Following)
     let cursorWhere = {};
+
     if (query.cursor) {
-      const { id, createdAt } = decodeCursor(query.cursor);
+      const decoded = decodeCursor(query.cursor);
+      cursorWeight = decoded.weight;
       cursorWhere = {
         OR: [
-          { createdAt: { lt: new Date(createdAt) } },
-          { createdAt: new Date(createdAt), id: { lt: id } },
+          { createdAt: { lt: new Date(decoded.createdAt) } },
+          { createdAt: new Date(decoded.createdAt), id: { lt: decoded.id } },
         ],
       };
     }
 
-    
-    const celebrityPosts = await this.getRecentCelebrityPosts(userId, cursorWhere, limit);
-    let timelinePosts: any[] = [];
-    let strategy = 'postgresql';
+    // 1. Resolve following and follower IDs for active user
+    const [following, followers] = await Promise.all([
+      this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      }),
+      this.prisma.follow.findMany({
+        where: { followingId: userId },
+        select: { followerId: true },
+      }),
+    ]);
 
-    
-    const isCached = await this.timelineService.isTimelineCached(userId);
-    
-    if (isCached) {
-      let maxScore: number | undefined;
-      if (query.cursor) {
-        const { createdAt } = decodeCursor(query.cursor);
-        maxScore = new Date(createdAt).getTime() - 1; 
-      }
+    const followingIds = following.map((f) => f.followingId);
+    const followerIds = followers.map((f) => f.followerId);
 
-      
-      const postIds = await this.timelineService.getTimeline(userId, maxScore, limit + 1);
-      
-      if (postIds.length > 0) {
-        
-        const posts = await this.prisma.post.findMany({
-          where: { id: { in: postIds } },
-          select: FEED_POST_SELECT.post.select,
-        });
+    const mergedItems: any[] = [];
 
-        
-        const postMap = new Map(posts.map(p => [p.id, p]));
-        timelinePosts = postIds.map(id => postMap.get(id)).filter(Boolean);
-        strategy = 'redis';
-      }
-    }
-
-    
-    if (timelinePosts.length === 0) {
-      this.logger.log(`Redis cache miss for user ${userId}, falling back to PostgreSQL`);
-      const feedItems = await this.prisma.feedItem.findMany({
+    // --- WEIGHT 2: Followed Users & Celebrity Accounts ---
+    if (cursorWeight === 2 && followingIds.length > 0) {
+      const followedPosts = await this.prisma.post.findMany({
         where: {
-          userId,
-          post: { isDeleted: false },
+          authorId: { in: followingIds },
+          isDeleted: false,
           ...cursorWhere,
         },
-        select: FEED_POST_SELECT,
+        select: FEED_POST_SELECT.post.select,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit + 1,
       });
-      timelinePosts = feedItems.map((fi) => fi.post);
+
+      mergedItems.push(...followedPosts.map(p => ({ ...p, weight: 2 })));
     }
 
-    
-    let merged = [...timelinePosts, ...celebrityPosts];
-    
-    
-    merged.sort((a, b) => {
-      const timeDiff = b.createdAt.getTime() - a.createdAt.getTime();
-      if (timeDiff === 0) {
-        return b.id.localeCompare(a.id);
+    // --- WEIGHT 1: Inbound Followers (not followed back) ---
+    if (cursorWeight >= 1 && mergedItems.length <= limit) {
+      const remainingLimit = limit + 1 - mergedItems.length;
+      const inboundFollowers = followerIds.filter(id => !followingIds.includes(id));
+
+      if (inboundFollowers.length > 0) {
+        const followerPosts = await this.prisma.post.findMany({
+          where: {
+            authorId: { in: inboundFollowers },
+            isDeleted: false,
+            ...(cursorWeight === 1 ? cursorWhere : {}),
+          },
+          select: FEED_POST_SELECT.post.select,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          take: remainingLimit,
+        });
+
+        mergedItems.push(...followerPosts.map(p => ({ ...p, weight: 1 })));
       }
-      return timeDiff;
-    });
+    }
 
-    
-    const uniqueMerged = Array.from(new Map(merged.map(p => [p.id, p])).values());
+    // --- WEIGHT 0: Global Discovery Pool ---
+    if (mergedItems.length <= limit) {
+      const remainingLimit = limit + 1 - mergedItems.length;
+      const excludedAuthorIds = [userId, ...followingIds, ...followerIds];
 
-    const hasNextPage = uniqueMerged.length > limit;
-    const items = hasNextPage ? uniqueMerged.slice(0, limit) : uniqueMerged;
+      const globalPosts = await this.prisma.post.findMany({
+        where: {
+          authorId: { notIn: excludedAuthorIds },
+          isDeleted: false,
+          ...(cursorWeight === 0 ? cursorWhere : {}),
+        },
+        select: FEED_POST_SELECT.post.select,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: remainingLimit,
+      });
+
+      mergedItems.push(...globalPosts.map(p => ({ ...p, weight: 0 })));
+    }
+
+    const hasNextPage = mergedItems.length > limit;
+    const items = hasNextPage ? mergedItems.slice(0, limit) : mergedItems;
+
     const last = items[items.length - 1];
-    const nextCursor = hasNextPage && last ? encodeCursor(last.id, last.createdAt) : null;
+    const nextCursor = hasNextPage && last
+      ? encodeCursor(last.id, last.createdAt, last.weight)
+      : null;
 
-    this.logger.log(`Feed fetched (Hybrid ${strategy}) for user ${userId}: ${items.length} items`);
+    this.logger.log(`Weighted feed generated for user ${userId}: ${items.length} items returned`);
 
     return {
       items,
       nextCursor,
       hasNextPage,
-      meta: { count: items.length, strategy: `${strategy}-hybrid` },
+      meta: {
+        count: items.length,
+        strategy: 'weighted-discovery-hybrid',
+      },
     };
   }
 
