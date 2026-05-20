@@ -36,12 +36,26 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('redis.host'),
-          port: configService.get<number>('redis.port'),
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const redisUrl = configService.get<string>('redis.url');
+        
+        // If REDIS_URL is provided (e.g., on Render), use it
+        if (redisUrl) {
+          return {
+            connection: {
+              url: redisUrl,
+            },
+          };
+        }
+        
+        // Otherwise, use host/port (e.g., local development)
+        return {
+          connection: {
+            host: configService.get<string>('redis.host'),
+            port: configService.get<number>('redis.port'),
+          },
+        };
+      },
     }),
 
     
