@@ -3,6 +3,16 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+/**
+ * Prisma v7 Configuration
+ * 
+ * For connection pooling with Supabase:
+ * - DATABASE_URL: Connection pooling endpoint (port 6543) - used by PrismaClient in app
+ * - DIRECT_URL: Direct database connection for migrations (port 5432) - used by Prisma CLI
+ * 
+ * Note: For migrations/schema operations, we use DIRECT_URL (no pooling)
+ * For the running app, we'll pass DATABASE_URL to PrismaClient constructor
+ */
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -10,6 +20,7 @@ export default defineConfig({
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Use DIRECT_URL for migrations (no pooling) - ensures compatibility
+    url: process.env["DIRECT_URL"] || process.env["DATABASE_URL"],
   },
 });
