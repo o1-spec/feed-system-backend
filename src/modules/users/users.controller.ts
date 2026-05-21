@@ -26,7 +26,7 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Get the authenticated user profile' })
   getMe(@CurrentUser() user: AuthUser) {
-    return this.usersService.findById(user.id);
+    return this.usersService.findMe(user.id);
   }
 
   @Patch('me')

@@ -65,6 +65,31 @@ export class UsersService {
     };
   }
 
+  async findMe(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        displayName: true,
+        bio: true,
+        avatarUrl: true,
+        coverUrl: true,
+        followerCount: true,
+        followingCount: true,
+        isCelebrity: true,
+        createdAt: true,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    return {
+      ...user,
+      isFollowing: false,
+    };
+  }
+
   async findByUsername(username: string) {
     const user = await this.prisma.user.findUnique({
       where: { username },
