@@ -22,7 +22,7 @@ export class FeedController {
   @Get('users/:id')
   @ApiOperation({ summary: 'Get a public user timeline (their posts)' })
   @ApiParam({ name: 'id', description: 'User ID whose timeline to fetch' })
-  getUserTimeline(@Param('id') userId: string, @Query() query: FeedQueryDto) {
-    return this.feedService.getUserTimeline(userId, query);
+  getUserTimeline(@CurrentUser('id') activeUserId: string, @Param('id') userId: string, @Query() query: FeedQueryDto) {
+    return this.feedService.getUserTimeline(userId, activeUserId, query);
   }
 }

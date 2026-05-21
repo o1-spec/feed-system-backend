@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
+import { getPostSelect, mapPost } from '../../common/utils/post.utils.js';
 
 @Injectable()
 export class BookmarksService {
@@ -86,22 +87,7 @@ export class BookmarksService {
       },
       include: {
         post: {
-          select: {
-            id: true,
-            content: true,
-            likesCount: true,
-            commentsCount: true,
-            createdAt: true,
-            author: {
-              select: {
-                id: true,
-                username: true,
-                displayName: true,
-                avatarUrl: true,
-                isCelebrity: true,
-              },
-            },
-          },
+          select: getPostSelect(userId),
         },
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -114,7 +100,7 @@ export class BookmarksService {
     const nextCursor = hasNextPage && last ? this.encodeCursor(last.id, last.createdAt) : null;
 
     return {
-      items: items.map((b) => b.post),
+      items: items.map((b) => mapPost(b.post)),
       nextCursor,
       hasNextPage,
     };

@@ -3,29 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { FeedQueryDto } from './dto/feed-query.dto.js';
 import { TimelineService } from '../timeline/timeline.service.js';
 
-const FEED_POST_SELECT = {
-  post: {
-    select: {
-      id: true,
-      content: true,
-      imageUrl: true,
-      likesCount: true,
-      commentsCount: true,
-      createdAt: true,
-      author: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
-          isCelebrity: true,
-        },
-      },
-    },
-  },
-  createdAt: true,
-  id: true,
-} as const;
+import { getPostSelect, mapPost } from '../../common/utils/post.utils.js';
 
 function encodeCursor(id: string, createdAt: Date, weight: number = 0): string {
   return Buffer.from(
@@ -97,12 +75,12 @@ export class FeedService {
           isDeleted: false,
           ...cursorWhere,
         },
-        select: FEED_POST_SELECT.post.select,
+        select: getPostSelect(userId),
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit + 1,
       });
 
-      mergedItems.push(...followedPosts.map(p => ({ ...p, weight: 2 })));
+      mergedItems.push(...followedPosts.map(p => ({ ...mapPost(p), weight: 2 })));
     }
 
     // --- WEIGHT 1: Inbound Followers (not followed back) ---
@@ -117,12 +95,12 @@ export class FeedService {
             isDeleted: false,
             ...(cursorWeight === 1 ? cursorWhere : {}),
           },
-          select: FEED_POST_SELECT.post.select,
+          select: getPostSelect(userId),
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           take: remainingLimit,
         });
 
-        mergedItems.push(...followerPosts.map(p => ({ ...p, weight: 1 })));
+        mergedItems.push(...followerPosts.map(p => ({ ...mapPost(p), weight: 1 })));
       }
     }
 
@@ -137,12 +115,12 @@ export class FeedService {
           isDeleted: false,
           ...(cursorWeight === 0 ? cursorWhere : {}),
         },
-        select: FEED_POST_SELECT.post.select,
+        select: getPostSelect(userId),
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: remainingLimit,
       });
 
-      mergedItems.push(...globalPosts.map(p => ({ ...p, weight: 0 })));
+      mergedItems.push(...globalPosts.map(p => ({ ...mapPost(p), weight: 0 })));
     }
 
     const hasNextPage = mergedItems.length > limit;
@@ -167,7 +145,7 @@ export class FeedService {
   }
 
   
-  async getUserTimeline(profileUserId: string, query: FeedQueryDto) {
+  async getUserTimeline(profileUserId: string, requestingUserId: string, query: FeedQueryDto) {
     const limit = query.limit ?? 20;
     let cursorWhere = {};
 
@@ -183,32 +161,18 @@ export class FeedService {
 
     const posts = await this.prisma.post.findMany({
       where: { authorId: profileUserId, isDeleted: false, ...cursorWhere },
-      select: {
-        id: true,
-        content: true,
-        likesCount: true,
-        commentsCount: true,
-        createdAt: true,
-        author: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            isCelebrity: true,
-          },
-        },
-      },
+      select: getPostSelect(requestingUserId),
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     });
 
     const hasNextPage = posts.length > limit;
     const items = hasNextPage ? posts.slice(0, limit) : posts;
+    const mappedItems = items.map(mapPost);
     const last = items[items.length - 1];
     const nextCursor = hasNextPage && last ? encodeCursor(last.id, last.createdAt) : null;
 
-    return { items, nextCursor, hasNextPage };
+    return { items: mappedItems, nextCursor, hasNextPage };
   }
 
   
@@ -231,7 +195,7 @@ export class FeedService {
         isDeleted: false,
         ...cursorWhere,
       },
-      select: FEED_POST_SELECT.post.select,
+      select: getPostSelect(userId),
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     });

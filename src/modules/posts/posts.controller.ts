@@ -32,8 +32,8 @@ export class PostsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a single post by ID' })
   @ApiParam({ name: 'id', description: 'Post ID' })
-  findOne(@Param('id') id: string) {
-    return this.postsService.getPostById(id);
+  findOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.postsService.getPostById(id, userId);
   }
 
   @Delete(':id')

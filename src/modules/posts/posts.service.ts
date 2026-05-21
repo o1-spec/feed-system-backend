@@ -15,24 +15,7 @@ import { FanoutJobData } from '../workers/fanout/interfaces/fanout-job.interface
 import { CreateCommentDto } from './dto/post-interaction.dto.js';
 import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
 
-const POST_SELECT = {
-  id: true,
-  content: true,
-  imageUrl: true,
-  likesCount: true,
-  commentsCount: true,
-  createdAt: true,
-  updatedAt: true,
-  author: {
-    select: {
-      id: true,
-      username: true,
-      displayName: true,
-      avatarUrl: true,
-      isCelebrity: true,
-    },
-  },
-} as const;
+import { getPostSelect, mapPost } from '../../common/utils/post.utils.js';
 
 function encodeCursor(id: string, createdAt: Date): string {
   return Buffer.from(JSON.stringify({ id, createdAt: createdAt.toISOString() })).toString('base64');
@@ -59,7 +42,7 @@ export class PostsService {
   async createPost(authorId: string, dto: CreatePostDto) {
     const post = await this.prisma.post.create({
       data: { content: dto.content, authorId, imageUrl: dto.imageUrl },
-      select: POST_SELECT,
+      select: getPostSelect(authorId),
     });
 
     this.logger.log(`Post created: ${post.id} by user ${authorId} (celebrity: ${post.author.isCelebrity})`);
@@ -68,7 +51,7 @@ export class PostsService {
     
     await this.fanoutToFollowers(authorId, post.id, post.createdAt, post.author.isCelebrity);
 
-    return post;
+    return mapPost(post);
   }
 
   private async fanoutToFollowers(
@@ -110,16 +93,16 @@ export class PostsService {
     this.logger.log(`Enqueued fanout job for post ${postId}`);
   }
 
-  async getPostById(postId: string) {
+  async getPostById(postId: string, requestingUserId: string) {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, isDeleted: false },
-      select: POST_SELECT,
+      select: getPostSelect(requestingUserId),
     });
     if (!post) throw new NotFoundException('Post not found');
-    return post;
+    return mapPost(post);
   }
 
-  async getUserPosts(userId: string, query: PaginationQueryDto) {
+  async getUserPosts(userId: string, requestingUserId: string, query: PaginationQueryDto) {
     const limit = query.limit ?? 20;
     let cursorWhere = {};
 
@@ -135,17 +118,18 @@ export class PostsService {
 
     const posts = await this.prisma.post.findMany({
       where: { authorId: userId, isDeleted: false, ...cursorWhere },
-      select: POST_SELECT,
+      select: getPostSelect(requestingUserId),
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     });
 
     const hasNextPage = posts.length > limit;
     const items = hasNextPage ? posts.slice(0, limit) : posts;
+    const mappedItems = items.map(mapPost);
     const last = items[items.length - 1];
     const nextCursor = hasNextPage && last ? encodeCursor(last.id, last.createdAt) : null;
 
-    return { items, nextCursor, hasNextPage };
+    return { items: mappedItems, nextCursor, hasNextPage };
   }
 
   async deletePost(postId: string, requesterId: string) {
