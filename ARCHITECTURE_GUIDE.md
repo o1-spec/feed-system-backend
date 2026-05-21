@@ -749,13 +749,16 @@ Content-Type: application/json
     "likesCount": 0,
     "commentsCount": 0,
     "createdAt": "2026-05-19T...",
+    "updatedAt": "2026-05-19T...",
     "author": {
       "id": "xyz789",
       "username": "johndoe",
       "displayName": "John Doe",
       "avatarUrl": "https://...",
       "isCelebrity": false
-    }
+    },
+    "isLiked": false,
+    "isBookmarked": false
   },
   "timestamp": "2026-05-19T..."
 }

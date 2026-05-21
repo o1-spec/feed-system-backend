@@ -109,9 +109,12 @@ All routes require `Authorization: Bearer <token>`.
 * **Request Body (`UpdateUserDto`):** (All fields optional)
   ```json
   {
+    "username": "johndoe",
+    "email": "john@domain.dev",
     "displayName": "John D.",
     "bio": "Lead Cloud Infrastructure Engineer",
-    "avatarUrl": "..."
+    "avatarUrl": "https://api.dicebear.com/7.x/adventurer/svg?seed=John",
+    "coverUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=John"
   }
   ```
 
@@ -148,7 +151,8 @@ All routes require `Authorization: Bearer <token>`.
 * **Request Body (`CreatePostDto`):**
   ```json
   {
-    "content": "Just deployed NestJS with Redis Sorted Sets timeline caches! ⚡🚀"
+    "content": "Just deployed NestJS with Redis Sorted Sets timeline caches! ⚡🚀",
+    "imageUrl": "https://res.cloudinary.com/..."
   }
   ```
 * **Success Response (201 Created):**
@@ -158,10 +162,20 @@ All routes require `Authorization: Bearer <token>`.
     "data": {
       "id": "cl...",
       "content": "...",
-      "authorId": "...",
+      "imageUrl": "...",
       "likesCount": 0,
       "commentsCount": 0,
-      "createdAt": "..."
+      "createdAt": "...",
+      "updatedAt": "...",
+      "author": {
+        "id": "...",
+        "username": "...",
+        "displayName": "...",
+        "avatarUrl": "...",
+        "isCelebrity": false
+      },
+      "isLiked": false,
+      "isBookmarked": false
     }
   }
   ```
@@ -208,10 +222,20 @@ The timelines support high-performance cursor pagination with Base64 encoded cur
         {
           "id": "cl...",
           "content": "...",
+          "imageUrl": null,
           "likesCount": 42,
           "commentsCount": 2,
           "createdAt": "...",
-          "author": { "id": "...", "username": "...", "displayName": "...", "avatarUrl": "...", "isCelebrity": false }
+          "updatedAt": "...",
+          "author": {
+            "id": "...",
+            "username": "...",
+            "displayName": "...",
+            "avatarUrl": "...",
+            "isCelebrity": false
+          },
+          "isLiked": false,
+          "isBookmarked": false
         }
       ],
       "nextCursor": "eyJpZCI6ImNs...IsImNyZWF0ZWRBdCI6IjIwMjYt..." ,
