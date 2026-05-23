@@ -14,6 +14,7 @@ import { TimelineService } from '../timeline/timeline.service.js';
 import { FanoutJobData } from '../workers/fanout/interfaces/fanout-job.interface.js';
 import { CreateCommentDto } from './dto/post-interaction.dto.js';
 import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
+import { EventsGateway } from '../events/events.gateway.js';
 
 import { getPostSelect, mapPost } from '../../common/utils/post.utils.js';
 
@@ -37,6 +38,7 @@ export class PostsService {
     private readonly prisma: PrismaService,
     private readonly timelineService: TimelineService,
     @InjectQueue('fanout') private readonly fanoutQueue: Queue<FanoutJobData>,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async createPost(authorId: string, dto: CreatePostDto) {
@@ -154,7 +156,7 @@ export class PostsService {
   async likePost(userId: string, postId: string) {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, isDeleted: false },
-      select: { id: true },
+      select: { id: true, authorId: true },
     });
     if (!post) throw new NotFoundException('Post not found');
 
@@ -171,6 +173,15 @@ export class PostsService {
         data: { likesCount: { increment: 1 } },
       }),
     ]);
+
+    if (post.authorId !== userId) {
+      this.eventsGateway.sendNotificationToUser(post.authorId, {
+        type: 'LIKE',
+        message: 'Someone liked your post!',
+        postId: postId,
+        actorId: userId,
+      });
+    }
 
     return { message: 'Post liked' };
   }
@@ -196,7 +207,7 @@ export class PostsService {
   async addComment(userId: string, postId: string, dto: CreateCommentDto) {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, isDeleted: false },
-      select: { id: true },
+      select: { id: true, authorId: true },
     });
     if (!post) throw new NotFoundException('Post not found');
 
@@ -216,6 +227,15 @@ export class PostsService {
         data: { commentsCount: { increment: 1 } },
       }),
     ]);
+
+    if (post.authorId !== userId) {
+      this.eventsGateway.sendNotificationToUser(post.authorId, {
+        type: 'COMMENT',
+        message: 'Someone commented on your post!',
+        postId: postId,
+        actorId: userId,
+      });
+    }
 
     return comment;
   }

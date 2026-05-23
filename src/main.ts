@@ -2,14 +2,19 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { RedisIoAdapter } from './common/adapters/redis-io.adapter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    
+    // Basic logging configuration
     logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug'],
   });
 
-  
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis(process.env.REDIS_URL || 'redis://localhost:6379');
+  app.useWebSocketAdapter(redisIoAdapter);
+
+  // Global prefix for all routes
   app.setGlobalPrefix('api/v1');
 
   

@@ -21,6 +21,8 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter.
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
 
+import { EventsModule } from './modules/events/events.module.js';
+
 @Module({
   imports: [
     
@@ -69,6 +71,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     BookmarksModule,
     MessagesModule,
     UploadModule,
+    EventsModule,
   ],
   providers: [
     
