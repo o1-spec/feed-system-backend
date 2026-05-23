@@ -73,6 +73,25 @@ export class FeedService {
     timelinePosts.forEach(p => allPostsMap.set(p.id, p));
     celebrityPosts.forEach(p => allPostsMap.set(p.id, p));
 
+    // 4.5 Global Discovery Fallback
+    // If the timeline is too sparse (e.g. for new users), pull from the global pool
+    if (allPostsMap.size < limit + 1) {
+      const remainingLimit = limit + 1 - allPostsMap.size;
+      const existingIds = Array.from(allPostsMap.keys());
+      const globalPosts = await this.prisma.post.findMany({
+        where: {
+          id: { notIn: existingIds.length > 0 ? existingIds : undefined },
+          authorId: { not: userId },
+          isDeleted: false,
+          ...cursorWhere,
+        },
+        select: getPostSelect(userId),
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: remainingLimit,
+      });
+      globalPosts.forEach(p => allPostsMap.set(p.id, p));
+    }
+
     const mergedPosts = Array.from(allPostsMap.values()).sort((a, b) => {
       const timeDiff = b.createdAt.getTime() - a.createdAt.getTime();
       if (timeDiff !== 0) return timeDiff;
