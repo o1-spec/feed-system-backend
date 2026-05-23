@@ -29,6 +29,14 @@ export class PostsController {
     return this.postsService.createPost(userId, dto);
   }
 
+  @Get('search')
+  @ApiOperation({ summary: 'Search for posts by content' })
+  search(@CurrentUser('id') userId: string, @Query('q') query: string, @Query('limit') limit?: string) {
+    if (!query) return { items: [], nextCursor: null, hasNextPage: false };
+    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    return this.postsService.searchPosts(query, userId, parsedLimit);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a single post by ID' })
   @ApiParam({ name: 'id', description: 'Post ID' })

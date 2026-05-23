@@ -254,4 +254,21 @@ export class PostsService {
 
     return { items, nextCursor, hasNextPage };
   }
+  async searchPosts(query: string, requestingUserId: string, limit: number = 20) {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        isDeleted: false,
+        content: { contains: query, mode: 'insensitive' },
+      },
+      select: getPostSelect(requestingUserId),
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return {
+      items: posts.map(mapPost),
+      nextCursor: null,
+      hasNextPage: false,
+    };
+  }
 }
