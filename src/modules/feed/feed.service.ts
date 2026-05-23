@@ -36,12 +36,12 @@ export class FeedService {
   async getHomeFeed(userId: string, query: FeedQueryDto) {
     const limit = query.limit ?? 20;
 
-    let cursorWeight = 2; // Default starting weight (Following)
+    let cursorTimestamp: number | undefined;
     let cursorWhere = {};
 
     if (query.cursor) {
       const decoded = decodeCursor(query.cursor);
-      cursorWeight = decoded.weight;
+      cursorTimestamp = new Date(decoded.createdAt).getTime();
       cursorWhere = {
         OR: [
           { createdAt: { lt: new Date(decoded.createdAt) } },
@@ -50,96 +50,54 @@ export class FeedService {
       };
     }
 
-    // 1. Resolve following and follower IDs for active user
-    const [following, followers] = await Promise.all([
-      this.prisma.follow.findMany({
-        where: { followerId: userId },
-        select: { followingId: true },
-      }),
-      this.prisma.follow.findMany({
-        where: { followingId: userId },
-        select: { followerId: true },
-      }),
-    ]);
+    // 1. Fetch post IDs from Redis Timeline (O(1) in-memory range lookup)
+    const timelinePostIds = await this.timelineService.getTimeline(userId, cursorTimestamp, limit + 1);
 
-    const followingIds = following.map((f) => f.followingId);
-    const followerIds = followers.map((f) => f.followerId);
-
-    const mergedItems: any[] = [];
-
-    // --- WEIGHT 2: Followed Users & Celebrity Accounts ---
-    if (cursorWeight === 2 && followingIds.length > 0) {
-      const followedPosts = await this.prisma.post.findMany({
+    // 2. Hydrate Redis posts via Prisma
+    let timelinePosts: any[] = [];
+    if (timelinePostIds.length > 0) {
+      timelinePosts = await this.prisma.post.findMany({
         where: {
-          authorId: { in: followingIds },
+          id: { in: timelinePostIds },
           isDeleted: false,
-          ...cursorWhere,
         },
         select: getPostSelect(userId),
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        take: limit + 1,
       });
-
-      mergedItems.push(...followedPosts.map(p => ({ ...mapPost(p), weight: 2 })));
     }
 
-    // --- WEIGHT 1: Inbound Followers (not followed back) ---
-    if (cursorWeight >= 1 && mergedItems.length <= limit) {
-      const remainingLimit = limit + 1 - mergedItems.length;
-      const inboundFollowers = followerIds.filter(id => !followingIds.includes(id));
+    // 3. Fetch recent celebrity posts (Pull-on-read fallback)
+    const celebrityPosts = await this.getRecentCelebrityPosts(userId, cursorWhere, limit + 1);
 
-      if (inboundFollowers.length > 0) {
-        const followerPosts = await this.prisma.post.findMany({
-          where: {
-            authorId: { in: inboundFollowers },
-            isDeleted: false,
-            ...(cursorWeight === 1 ? cursorWhere : {}),
-          },
-          select: getPostSelect(userId),
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          take: remainingLimit,
-        });
+    // 4. Merge, deduplicate, and sort chronologically
+    const allPostsMap = new Map();
+    timelinePosts.forEach(p => allPostsMap.set(p.id, p));
+    celebrityPosts.forEach(p => allPostsMap.set(p.id, p));
 
-        mergedItems.push(...followerPosts.map(p => ({ ...mapPost(p), weight: 1 })));
-      }
-    }
+    const mergedPosts = Array.from(allPostsMap.values()).sort((a, b) => {
+      const timeDiff = b.createdAt.getTime() - a.createdAt.getTime();
+      if (timeDiff !== 0) return timeDiff;
+      return b.id.localeCompare(a.id); // Tie-breaker
+    });
 
-    // --- WEIGHT 0: Global Discovery Pool ---
-    if (mergedItems.length <= limit) {
-      const remainingLimit = limit + 1 - mergedItems.length;
-      const excludedAuthorIds = [userId, ...followingIds, ...followerIds];
-
-      const globalPosts = await this.prisma.post.findMany({
-        where: {
-          authorId: { notIn: excludedAuthorIds },
-          isDeleted: false,
-          ...(cursorWeight === 0 ? cursorWhere : {}),
-        },
-        select: getPostSelect(userId),
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        take: remainingLimit,
-      });
-
-      mergedItems.push(...globalPosts.map(p => ({ ...mapPost(p), weight: 0 })));
-    }
-
-    const hasNextPage = mergedItems.length > limit;
-    const items = hasNextPage ? mergedItems.slice(0, limit) : mergedItems;
+    // 5. Pagination
+    const hasNextPage = mergedPosts.length > limit;
+    const items = hasNextPage ? mergedPosts.slice(0, limit) : mergedPosts;
+    const mappedItems = items.map(mapPost);
 
     const last = items[items.length - 1];
     const nextCursor = hasNextPage && last
-      ? encodeCursor(last.id, last.createdAt, last.weight)
+      ? encodeCursor(last.id, last.createdAt)
       : null;
 
-    this.logger.log(`Weighted feed generated for user ${userId}: ${items.length} items returned`);
+    this.logger.log(`Redis-Timeline Hybrid feed generated for user ${userId}: ${items.length} items returned`);
 
     return {
-      items,
+      items: mappedItems,
       nextCursor,
       hasNextPage,
       meta: {
         count: items.length,
-        strategy: 'weighted-discovery-hybrid',
+        strategy: 'redis-timeline-hybrid',
       },
     };
   }
