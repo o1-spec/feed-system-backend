@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Delete,
   Body,
   Param,
@@ -12,6 +13,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PostsService } from './posts.service.js';
 import { CreatePostDto } from './dto/create-post.dto.js';
+import { UpdatePostDto } from './dto/update-post.dto.js';
 import { CreateCommentDto } from './dto/post-interaction.dto.js';
 import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -42,6 +44,13 @@ export class PostsController {
   @ApiParam({ name: 'id', description: 'Post ID' })
   findOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
     return this.postsService.getPostById(id, userId);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a post (author only)' })
+  @ApiParam({ name: 'id', description: 'Post ID' })
+  update(@CurrentUser('id') userId: string, @Param('id') id: string, @Body() dto: UpdatePostDto) {
+    return this.postsService.updatePost(id, userId, dto);
   }
 
   @Delete(':id')
