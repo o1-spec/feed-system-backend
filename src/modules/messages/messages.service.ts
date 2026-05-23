@@ -6,10 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 import { PaginationQueryDto } from '../users/dto/pagination-query.dto.js';
+import { MessagesGateway } from './messages.gateway.js';
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messagesGateway: MessagesGateway,
+  ) {}
 
   async sendMessage(senderId: string, dto: CreateMessageDto) {
     const { receiverId, content } = dto;
@@ -28,7 +32,7 @@ export class MessagesService {
     }
 
     
-    return this.prisma.message.create({
+    const createdMessage = await this.prisma.message.create({
       data: {
         senderId,
         receiverId,
@@ -42,6 +46,10 @@ export class MessagesService {
         createdAt: true,
       },
     });
+
+    this.messagesGateway.emitNewMessage(receiverId, createdMessage);
+
+    return createdMessage;
   }
 
   async getConversations(userId: string) {

@@ -10,6 +10,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreatePostDto } from './dto/create-post.dto.js';
+import { UpdatePostDto } from './dto/update-post.dto.js';
 import { TimelineService } from '../timeline/timeline.service.js';
 import { FanoutJobData } from '../workers/fanout/interfaces/fanout-job.interface.js';
 import { CreateCommentDto } from './dto/post-interaction.dto.js';
@@ -102,6 +103,33 @@ export class PostsService {
     });
     if (!post) throw new NotFoundException('Post not found');
     return mapPost(post);
+  }
+
+  async updatePost(postId: string, userId: string, dto: UpdatePostDto) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, isDeleted: false },
+      select: { id: true, authorId: true },
+    });
+    if (!post) throw new NotFoundException('Post not found');
+    if (post.authorId !== userId) {
+      throw new ForbiddenException('You can only edit your own posts');
+    }
+
+    const data: any = {};
+    if (dto.content !== undefined) {
+      data.content = dto.content;
+    }
+    if (dto.removeImage) {
+      data.imageUrl = null;
+    }
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data,
+      select: getPostSelect(userId),
+    });
+
+    return mapPost(updatedPost);
   }
 
   async getUserPosts(userId: string, requestingUserId: string, query: PaginationQueryDto) {
@@ -273,5 +301,22 @@ export class PostsService {
     const nextCursor = hasNextPage && last ? encodeCursor(last.id, last.createdAt) : null;
 
     return { items, nextCursor, hasNextPage };
+  }
+  async searchPosts(query: string, requestingUserId: string, limit: number = 20) {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        isDeleted: false,
+        content: { contains: query, mode: 'insensitive' },
+      },
+      select: getPostSelect(requestingUserId),
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return {
+      items: posts.map(mapPost),
+      nextCursor: null,
+      hasNextPage: false,
+    };
   }
 }
